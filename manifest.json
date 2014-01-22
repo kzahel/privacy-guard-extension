@@ -3,7 +3,7 @@
     "short_name": "Privacy Guard",
     "description": "An extension to help you make informed decisions about the privacy implications of your installed extensions",
     "author": "Kyle Graehl",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "manifest_version": 2,
     "offline_enabled": true,
     "minimum_chrome_version": "8",
