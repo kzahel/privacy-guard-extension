@@ -28,6 +28,11 @@
 	"default_title": "Privacy Advisor"
     },
     "icons": { 
-        "32": "cws_32.png"
+        "19": "icons/privacy-guard-19.png",
+        "48": "icons/privacy-guard-48.png",
+        "96": "icons/privacy-guard-96.png",
+        "128": "icons/privacy-guard-128.png",
+        "256": "icons/privacy-guard-256.png",
+        "512": "icons/privacy-guard-512.png"
     }
 }
