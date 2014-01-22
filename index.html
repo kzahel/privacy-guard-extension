@@ -4,7 +4,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>My HTML File</title>
+  <title>Privacy Guard</title>
   <!--link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/bootstrap.css"-->
   <script src="jquery-2.0.3.js"></script>
@@ -25,7 +25,7 @@
 
   <ul class="nav nav-tabs">
 
-    <li>
+    <li class="active">
       <a ng-click="updateRiskFactor('high')" href="#">
         High Risk
         <span class="badge">{{ numHigh }}</span>
@@ -38,7 +38,7 @@
       </a>
     </li>
 
-    <li class="active">
+    <li>
       <a ng-click="updateRiskFactor('low')" href="#">Low Risk
         <span class="badge">{{ numTotal }}</span>
       </a>
@@ -52,7 +52,7 @@ Show:
 <!--input type="checkbox" checked ng-click="updateFilter('apps')" /> Apps 
 <input checked type="checkbox" ng-click="updateFilter('extensions')" /> Extensions -->
 
-<input type="checkbox" checked ng-model="showApps" /> Apps 
+<input type="checkbox" ng-model="showApps" /> Apps 
 <input checked type="checkbox" ng-model="showExtensions" /> Extensions
 
 , Filter <input ng-model="searchText" type="text" />

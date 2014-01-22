@@ -107,14 +107,20 @@ App.prototype.fetchDetail = function() {
     xhr.send()
 }
 
-App.prototype.isRiskFactor = function(factor) {
+App.prototype.isRiskFactor = function(factor, $scope) {
+    var val = true
+
+    val = (this.opts.data.isApp && $scope.showApps) || 
+        (! this.opts.data.isApp && $scope.showExtensions)
+
     if (factor == 'high') {
-        return this.info.length > 1
+        val = val && this.info.length > 1
     } else if (factor == 'med') {
-        return this.info.length == 1
+        val = val && this.info.length == 1
     } else if (factor == 'low') {
-        return this.info.length == 0
+        val = val && this.info.length == 0
     }
+    return val
 }
 
 myApp.factory('apps', function() {
@@ -127,8 +133,22 @@ function AppsCtrl($scope, $http, apps) {
     $scope.apps = [];
     $scope.allApps = [];
 
-    $scope.showApps = true
+    $scope.appsByRisk = {}
+
+    $scope.showApps = false
     $scope.showExtensions = true
+
+    $scope.onCheckbox = function(key, newval, oldval) {
+        $scope.apps = _.filter( $scope.allApps, function(app) {
+            return ($scope.showApps && app.opts.data.isApp) ||
+                ($scope.showExtensions && ! app.opts.data.isApp)
+        })
+        //console.log('oncheckbox',key,newval,oldval)
+    }
+
+    $scope.$watch('showApps', _.bind($scope.onCheckbox, this, 'showApps'))
+    $scope.$watch('showExtensions', _.bind($scope.onCheckbox, this, 'showExtensions'))
+
     $scope.searchText = ''
 
     $scope.numHigh = 20
@@ -138,7 +158,7 @@ function AppsCtrl($scope, $http, apps) {
     $scope.updateRiskFactor = function(detail) {
         console.log('update risk factor',detail,this)
         $scope.apps = $scope.allApps.filter( function(item) {
-            return item.isRiskFactor(detail)
+            return item.isRiskFactor(detail, $scope)
         })
 
     }
@@ -171,6 +191,8 @@ function AppsCtrl($scope, $http, apps) {
         //$scope.$apply()
         apps.collectInfo( function() {
             $scope.apps = $scope.allApps.slice()
+            //$scope.onCheckbox()
+            $scope.updateRiskFactor('high')
             $scope.$apply()
         })
     });
