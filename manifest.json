@@ -1,0 +1,32 @@
+{
+    "name": "Privacy Guard",
+    "short_name": "Privacy Guard",
+    "description": "An extension to help you make informed decisions about the privacy implications of your installed extensions",
+    "author": "Kyle Graehl",
+    "version": "0.0.1",
+    "manifest_version": 2,
+    "offline_enabled": true,
+    "minimum_chrome_version": "31",
+    "permissions": [
+        "contextMenus",
+        "management",
+        "notifications",
+        "pushMessaging",
+        "identity",
+        "https://chrome.google.com/webstore/"
+    ],
+    "optional_permissions": [
+    ],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "options_page": "options.html",
+    "browser_action": {
+	"default_popup": "index.html",
+	"default_title": "Privacy Advisor"
+    },
+    "icons": { 
+        "32": "cws_32.png"
+    }
+}

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" ng-app="myApp">
+<head>
+  <meta charset="utf-8">
+  <title>My HTML File</title>
+  <!--link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/bootstrap.css"-->
+  <script src="jquery-2.0.3.js"></script>
+  <link rel="stylesheet" href="bootstrap-dist/css/bootstrap.min.css" type="text/css"/>
+  <script src="bootstrap-dist/js/bootstrap.min.js"></script>
+
+  <script src="js/underscore.js"></script>
+  <script src="js/angular.js"></script>
+  <script src="index.js"></script>
+
+
+</head>
+<body style="margin:2em">
+
+<h1>Privacy Guard</h1>
+
+<div ng-controller="AppsCtrl">
+
+  <ul class="nav nav-tabs">
+
+    <li>
+      <a ng-click="updateFilter('high')" href="#">
+        High Risk
+        <span class="badge">{{ numHigh }}</span>
+      </a>
+    </li>
+
+    <li>
+      <a ng-click="updateFilter('low')" href="#">Low Risk
+        <span class="badge">{{ numLow }}</span>
+      </a>
+    </li>
+
+    <li class="active">
+      <a ng-click="updateFilter('everything')" href="#">Everything
+        <span class="badge">{{ numTotal }}</span>
+      </a>
+    </li>
+
+  </ul>
+<p>
+
+Show: 
+
+<!--input type="checkbox" checked ng-click="updateFilter('apps')" /> Apps 
+<input checked type="checkbox" ng-click="updateFilter('extensions')" /> Extensions -->
+
+<input type="checkbox" checked ng-model="showApps" /> Apps 
+<input checked type="checkbox" ng-model="showExtensions" /> Extensions
+
+, Filter <input ng-model="searchText" type="text" />
+<input type="button" value="Filter" ng-click="clickButton()" />
+
+</p>
+
+
+    <ul>
+      <li ng-repeat="app in apps | filter:{name:searchText}">
+        
+        <a href="#" ng-click="clickApp(app)">
+          <img src="{{app.getIcon(16)}}" style="width:16px; height:16px" />
+- 
+          {{app.name | truncate:30}}
+
+        </a>
+        - {{ app.version }} - {{ app.info }}
+      </li>
+    </ul>
+  </div>
+ 
+</body>
+</html>
