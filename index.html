@@ -19,7 +19,7 @@
 </head>
 <body style="margin:2em">
 
-<h1>Privacy Guard</h1>
+<h1>Privacy Guard <span style="font-size:50%">for Google Chrome</span></h1>
 
 <div ng-controller="AppsCtrl">
 
@@ -34,13 +34,13 @@
 
     <li ng-class="{active: curFactor == 'med'}">
       <a ng-click="updateRiskFactor('med')" href="#">Medium Risk
-        <span class="badge">{{ numLow }}</span>
+        <span class="badge">{{ numMed }}</span>
       </a>
     </li>
 
     <li ng-class="{active: curFactor == 'low'}">
       <a ng-click="updateRiskFactor('low')" href="#">Low Risk
-        <span class="badge">{{ numTotal }}</span>
+        <span class="badge">{{ numLow }}</span>
       </a>
     </li>
 

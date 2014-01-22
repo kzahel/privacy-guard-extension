@@ -165,7 +165,18 @@ function AppsCtrl($scope, $http, apps) {
     $scope.curFactor = 'high'
 
     $scope.onCheckbox = function(key, newval, oldval) {
-        $scope.updateRiskFactor($scope.curFactor)
+        var factor = $scope.curFactor
+
+        $scope.updateRiskFactor('low')
+        $scope.numLow = $scope.apps.length
+
+        $scope.updateRiskFactor('med')
+        $scope.numMed = $scope.apps.length
+
+        $scope.updateRiskFactor('high')
+        $scope.numHigh = $scope.apps.length
+
+        $scope.updateRiskFactor(factor)
     }
 
     $scope.$watch('showApps', _.bind($scope.onCheckbox, this, 'showApps'))
@@ -173,9 +184,9 @@ function AppsCtrl($scope, $http, apps) {
 
     $scope.searchText = ''
 
-    $scope.numHigh = 20
-    $scope.numLow = 10
-    $scope.numTotal = 100
+    $scope.numHigh = 0
+    $scope.numMed = 0
+    $scope.numLow = 0
 
     $scope.updateRiskFactor = function(detail) {
         $scope.curFactor = detail
@@ -213,7 +224,15 @@ function AppsCtrl($scope, $http, apps) {
         apps.collectInfo( function() {
             $scope.apps = $scope.allApps.slice()
             //$scope.onCheckbox()
+            $scope.updateRiskFactor('low')
+            $scope.numLow = $scope.apps.length
+
+            $scope.updateRiskFactor('med')
+            $scope.numMed = $scope.apps.length
+
             $scope.updateRiskFactor('high')
+            $scope.numHigh = $scope.apps.length
+
             $scope.$apply()
         })
     });
