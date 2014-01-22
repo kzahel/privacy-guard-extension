@@ -27,20 +27,20 @@
   <ul class="factor-tabs nav nav-tabs">
 
     <li id="factor-high" ng-class="{active: curFactor == 'high'}">
-      <a ng-click="updateRiskFactor('high')" href="#">
+      <a ng-click="updateRiskFactor('high',true)" href="#">
         High Risk
         <span class="badge badge-error">{{ numHigh }}</span>
       </a>
     </li>
 
     <li ng-class="{active: curFactor == 'med'}">
-      <a ng-click="updateRiskFactor('med')" href="#">Medium Risk
+      <a ng-click="updateRiskFactor('med',true)" href="#">Medium Risk
         <span class="badge badge-warning">{{ numMed }}</span>
       </a>
     </li>
 
     <li ng-class="{active: curFactor == 'low'}">
-      <a ng-click="updateRiskFactor('low')" href="#">Low Risk
+      <a ng-click="updateRiskFactor('low',true)" href="#">Low Risk
         <span class="badge">{{ numLow }}</span>
       </a>
     </li>
@@ -58,11 +58,17 @@ Show:
 
 , Filter <input ng-model="searchText" type="text" />
 
+<div id="progressbar" class="progress progress-striped active" style="height:10px; display:none">
+  <div id="progressbar-width" class="progress-bar progress-bar-warning"  role="progressbar" style="width: 45%">
+    <span class="sr-only"></span>
+  </div>
+</div>
+
 
 </p>
 
     <ul>
-      <li ng-repeat="app in apps | filter:{name:searchText}">
+      <li ng-repeat="app in apps | filter:customSearch">
         
 <div  ng-class="{appDisabled: app.opts.data.enabled == false}">
 
@@ -73,7 +79,16 @@ Show:
           {{app.name}}
 
         </a>
-        - {{ app.version }} - {{ app.info }} {{ app.scraped }}
+        - {{ app.version }} - {{ app.info }}
+
+
+        
+        <a ng-if="app.authorUrl()" href="{{ app.authorUrl() }}" target="_blank">
+        {{ app.showAuthor() }}</a>,
+
+        <span ng-if="! app.authorUrl()">{{ app.showAuthor() }}</span>
+
+        {{ app.showUsers() }}
 
 </div>
 

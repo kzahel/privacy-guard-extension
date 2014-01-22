@@ -33,6 +33,7 @@ var myApp = angular.module('myApp', ["filters"])
         function( $compileProvider )
         {   
             $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome):/);
+            $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome|chrome-extension):/);
             // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
         }
     ]);
@@ -55,6 +56,7 @@ Apps.prototype.collectInfo = function(callback) {
     function collect(apps, app, info) {
         if (info) {
             app.info = info
+            app.infoSearchable = _.values(info).join(' ').toLowerCase()
         }
         if (apps.length == 0) {
             callback()
@@ -63,18 +65,75 @@ Apps.prototype.collectInfo = function(callback) {
             chrome.management.getPermissionWarningsById(app.id, _.bind(collect, this, apps, app))
         }
     }
-
     collect(this.data.slice())
+}
+
+function scrapeApps(apps, $scope, callback) {
+    var totalLength = apps.length
+    //console.log('scrapeapps',apps)
+    function collect(apps, app, info) {
+        $('#progressbar-width').css('width',Math.floor((totalLength - apps.length)/totalLength * 100) + '%')
+        if (! $scope.$$phase) {
+            $scope.$apply()
+        }
+        if (info) {
+            app.scraped = info
+            app.scrapedSearchable = _.values(info).join(' ').toLowerCase()
+        }
+        if (apps.length == 0) {
+            callback()
+        } else if (apps.length > 0) {
+            var app = apps.pop()
+            if (app.scraped) {
+                // already have scraped, just return previous data
+                setTimeout( function(){ collect(apps, app, app.scraped) }, 1 )
+            } else {
+                app.fetchDetail(_.bind(collect, this, apps, app))
+            }
+        }
+    }
+    collect(apps.slice().reverse())
 }
 
 function App(opts){
     this.opts = opts
 
     this.info = null
+    this.infoSearchable = ''
+    this.scraped = null
+    this.scrapedSearchable = ''
 
     this.id = opts.data.id
     this.name = opts.data.name
+    this.nameLowerCase = this.name.toLowerCase()
     this.version = opts.data.version
+}
+App.prototype.authorUrl = function() {
+    if (this.scraped) {
+        if (this.scraped.authorurl) {
+            return this.scraped.authorurl
+        } else {
+            var url = this.scraped.website || this.scraped.author
+            url = url.slice('from '.length, url.length)
+            if (url.split('.').length > 1) {
+                url = 'http://' + url
+                return url
+            } else {
+                return
+            }
+        }
+    }
+}
+
+App.prototype.showAuthor = function() {
+    if (this.scraped) {
+        return this.scraped.website || this.scraped.author
+    }
+}
+App.prototype.showUsers = function() {
+    if (this.scraped) {
+        return this.scraped.users
+    }
 }
 App.prototype.collectInfo = function(callback) {
     chrome.management.getPermissionWarningsById(this.id, callback)
@@ -117,7 +176,7 @@ App.prototype.fetchDetail = function(callback) {
         data['users'] = $(usersdiv, result).text()
 
 
-        console.log('parsed dom',result)
+        //console.log('parsed dom',result)
         console.log('scraped data:',data)
 
         callback(data)
@@ -155,16 +214,30 @@ myApp.factory('apps', function() {
 
 function AppsCtrl($scope, $http, apps) {
     window.appObj = apps
+
     $scope.apps = [];
     $scope.allApps = [];
-
     $scope.appsByRisk = {}
 
     $scope.showApps = false
     $scope.showExtensions = true
     $scope.curFactor = 'high'
 
+    $scope.customSearch = function(item) {
+        if ( item.nameLowerCase.match($scope.searchTextLower) ) {
+            return true
+        }
+        if (item.infoSearchable.match($scope.searchTextLower) ) {
+            return true
+        }
+        if (item.scrapedSearchable.match($scope.searchTextLower) ) {
+            return true
+        }
+
+    }
+
     $scope.onCheckbox = function(key, newval, oldval) {
+        console.log('onCheckbox',key,newval)
         var factor = $scope.curFactor
 
         $scope.updateRiskFactor('low')
@@ -177,23 +250,48 @@ function AppsCtrl($scope, $http, apps) {
         $scope.numHigh = $scope.apps.length
 
         $scope.updateRiskFactor(factor)
+
+        $scope.scrapeDetails()
     }
 
-    $scope.$watch('showApps', _.bind($scope.onCheckbox, this, 'showApps'))
-    $scope.$watch('showExtensions', _.bind($scope.onCheckbox, this, 'showExtensions'))
+    var scraping = false
+    $scope.scrapeDetails = function() {
+        if ($scope.apps.length == 0) { return }
+        if (scraping) { 
+            console.log('not scraping for details, already scraping...')
+            return
+            // enqueue instead?
+        }
+        $('#progressbar-width').css('width','0%')
+        $('#progressbar').show()
+        scraping = true
+        //console.log('scrapeapps',$scope.apps)
+        scrapeApps($scope.apps, $scope, function() { 
+            //console.log("scraped")
+            scraping = false
+            $('#progressbar').hide()
+            if ($scope.apps.length > 0) {
+                // $scope.$apply()
+            }
+        })
+    }
 
     $scope.searchText = ''
+    $scope.searchTextLower = ''
 
     $scope.numHigh = 0
     $scope.numMed = 0
     $scope.numLow = 0
 
-    $scope.updateRiskFactor = function(detail) {
+    $scope.updateRiskFactor = function(detail, rescrape) {
         $scope.curFactor = detail
 
         $scope.apps = $scope.allApps.filter( function(item) {
             return item.isRiskFactor(detail, $scope)
         })
+        if (rescrape) {
+            $scope.scrapeDetails()
+        }
 
     }
 
@@ -213,17 +311,24 @@ function AppsCtrl($scope, $http, apps) {
         console.log('clicked on app',app)
         app.fetchDetail( function(data) {
             app.scraped = data
-            $scope.$apply()
+            //$scope.$apply()
         })
     }
 
     apps.fetch(function(data) {
         $scope.allApps = data
 
-        //$scope.$apply()
+        console.log('collectInfo')
+
+        $scope.$watch('searchText', function(){ $scope.searchTextLower = $scope.searchText })
+        $scope.$watch('showApps', _.bind($scope.onCheckbox, this, 'showApps'))
+        $scope.$watch('showExtensions', _.bind($scope.onCheckbox, this, 'showExtensions'))
+
+
         apps.collectInfo( function() {
+            console.log('collectedInfo')
             $scope.apps = $scope.allApps.slice()
-            //$scope.onCheckbox()
+
             $scope.updateRiskFactor('low')
             $scope.numLow = $scope.apps.length
 
@@ -233,7 +338,12 @@ function AppsCtrl($scope, $http, apps) {
             $scope.updateRiskFactor('high')
             $scope.numHigh = $scope.apps.length
 
-            $scope.$apply()
+            console.log('$scope.apps',$scope.apps)
+            //setTimeout( function() {
+            if (! $scope.$$phase) {
+                $scope.$apply()
+            }
+            //},1)
         })
     });
 }
