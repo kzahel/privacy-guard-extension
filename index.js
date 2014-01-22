@@ -107,6 +107,15 @@ App.prototype.fetchDetail = function() {
     xhr.send()
 }
 
+App.prototype.isRiskFactor = function(factor) {
+    if (factor == 'high') {
+        return this.info.length > 1
+    } else if (factor == 'med') {
+        return this.info.length == 1
+    } else if (factor == 'low') {
+        return this.info.length == 0
+    }
+}
 
 myApp.factory('apps', function() {
     var apps = new Apps();
@@ -116,17 +125,22 @@ myApp.factory('apps', function() {
 function AppsCtrl($scope, $http, apps) {
     window.appObj = apps
     $scope.apps = [];
+    $scope.allApps = [];
 
     $scope.showApps = true
     $scope.showExtensions = true
-    $scope.searchText = 'helper'
+    $scope.searchText = ''
 
     $scope.numHigh = 20
     $scope.numLow = 10
     $scope.numTotal = 100
 
-    $scope.updateFilter = function(detail) {
-        console.log('update filter',detail,this)
+    $scope.updateRiskFactor = function(detail) {
+        console.log('update risk factor',detail,this)
+        $scope.apps = $scope.allApps.filter( function(item) {
+            return item.isRiskFactor(detail)
+        })
+
     }
 
     $scope.clickButton = function() {
@@ -152,9 +166,11 @@ function AppsCtrl($scope, $http, apps) {
     }
 
     apps.fetch(function(data) {
-        $scope.apps = data
+        $scope.allApps = data
+
         //$scope.$apply()
         apps.collectInfo( function() {
+            $scope.apps = $scope.allApps.slice()
             $scope.$apply()
         })
     });

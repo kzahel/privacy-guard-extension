@@ -24,20 +24,20 @@
   <ul class="nav nav-tabs">
 
     <li>
-      <a ng-click="updateFilter('high')" href="#">
+      <a ng-click="updateRiskFactor('high')" href="#">
         High Risk
         <span class="badge">{{ numHigh }}</span>
       </a>
     </li>
 
     <li>
-      <a ng-click="updateFilter('low')" href="#">Low Risk
+      <a ng-click="updateRiskFactor('med')" href="#">Medium Risk
         <span class="badge">{{ numLow }}</span>
       </a>
     </li>
 
     <li class="active">
-      <a ng-click="updateFilter('everything')" href="#">Everything
+      <a ng-click="updateRiskFactor('low')" href="#">Low Risk
         <span class="badge">{{ numTotal }}</span>
       </a>
     </li>
@@ -57,7 +57,6 @@ Show:
 <input type="button" value="Filter" ng-click="clickButton()" />
 
 </p>
-
 
     <ul>
       <li ng-repeat="app in apps | filter:{name:searchText}">
