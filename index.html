@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/bootstrap.css"-->
   <script src="jquery-2.0.3.js"></script>
   <link rel="stylesheet" href="bootstrap-dist/css/bootstrap.min.css" type="text/css"/>
+  <link rel="stylesheet" href="index.css" type="text/css"/>
   <script src="bootstrap-dist/js/bootstrap.min.js"></script>
 
   <script src="js/underscore.js"></script>
@@ -28,13 +29,13 @@
     <li id="factor-high" ng-class="{active: curFactor == 'high'}">
       <a ng-click="updateRiskFactor('high')" href="#">
         High Risk
-        <span class="badge">{{ numHigh }}</span>
+        <span class="badge badge-error">{{ numHigh }}</span>
       </a>
     </li>
 
     <li ng-class="{active: curFactor == 'med'}">
       <a ng-click="updateRiskFactor('med')" href="#">Medium Risk
-        <span class="badge">{{ numMed }}</span>
+        <span class="badge badge-warning">{{ numMed }}</span>
       </a>
     </li>
 
