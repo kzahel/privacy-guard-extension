@@ -1,4 +1,6 @@
-
+.appDisabled {
+    opacity: 0.4
+}
 
 .badge {
   padding: 1px 9px 2px;

@@ -64,13 +64,19 @@ Show:
     <ul>
       <li ng-repeat="app in apps | filter:{name:searchText}">
         
+<div  ng-class="{appDisabled: app.opts.data.enabled == false}">
+
         <a href="#" ng-click="clickApp(app)">
           <img src="{{app.getIcon(16)}}" style="width:16px; height:16px" />
-- 
-          {{app.name | truncate:30}}
+
+
+          {{app.name}}
 
         </a>
         - {{ app.version }} - {{ app.info }} {{ app.scraped }}
+
+</div>
+
       </li>
     </ul>
   </div>

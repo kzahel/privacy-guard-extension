@@ -17,6 +17,7 @@
     "optional_permissions": [
         "https://chrome.google.com/"
     ],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
     "background": {
         "scripts": ["background.js"],
         "persistent": false
