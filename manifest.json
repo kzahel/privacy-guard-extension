@@ -12,10 +12,10 @@
         "management",
         "notifications",
         "pushMessaging",
-        "identity",
-        "https://chrome.google.com/webstore/"
+        "identity"
     ],
     "optional_permissions": [
+        "https://chrome.google.com/"
     ],
     "background": {
         "scripts": ["background.js"],
