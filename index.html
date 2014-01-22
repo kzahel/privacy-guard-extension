@@ -23,22 +23,22 @@
 
 <div ng-controller="AppsCtrl">
 
-  <ul class="nav nav-tabs">
+  <ul class="factor-tabs nav nav-tabs">
 
-    <li class="active">
+    <li id="factor-high" ng-class="{active: curFactor == 'high'}">
       <a ng-click="updateRiskFactor('high')" href="#">
         High Risk
         <span class="badge">{{ numHigh }}</span>
       </a>
     </li>
 
-    <li>
+    <li ng-class="{active: curFactor == 'med'}">
       <a ng-click="updateRiskFactor('med')" href="#">Medium Risk
         <span class="badge">{{ numLow }}</span>
       </a>
     </li>
 
-    <li>
+    <li ng-class="{active: curFactor == 'low'}">
       <a ng-click="updateRiskFactor('low')" href="#">Low Risk
         <span class="badge">{{ numTotal }}</span>
       </a>
@@ -56,7 +56,7 @@ Show:
 <input checked type="checkbox" ng-model="showExtensions" /> Extensions
 
 , Filter <input ng-model="searchText" type="text" />
-<input type="button" value="Filter" ng-click="clickButton()" />
+
 
 </p>
 
@@ -69,7 +69,7 @@ Show:
           {{app.name | truncate:30}}
 
         </a>
-        - {{ app.version }} - {{ app.info }}
+        - {{ app.version }} - {{ app.info }} {{ app.scraped }}
       </li>
     </ul>
   </div>

@@ -88,17 +88,39 @@ App.prototype.getIcon = function(sz) {
     }
     return icons[0].url
 }
-App.prototype.fetchDetail = function() {
+App.prototype.fetchDetail = function(callback) {
     var url = 'https://chrome.google.com/webstore/detail/' + this.id
     var xhr = new XMLHttpRequest()
     xhr.onload = function(e) {
         var d = new DOMParser
         var result = d.parseFromString(e.target.responseText, 'text/html')
         var selector = 'div[title^="This item is created by the owner of the listed website"]'
-        var elt = $(selector, result)
-        var author = $(elt).text()
 
-        console.log('xhr onload',e.target.responseText)
+        var starsdiv = '.rsw-stars'
+
+        var reviewsdiv = '.webstore-Hh-sg-Nb'
+        
+        var authorurldiv = '.webstore-g-j-y'
+
+        var authordiv = '.webstore-g-j-x'
+        var usersdiv = '.webstore-g-j-Cd'
+
+        var data = {}
+
+        data['stars'] = $(starsdiv, result).attr('g:rating_override')
+        data['reviews'] = $(reviewsdiv, result).text()
+        data['authorurl'] = $(authorurldiv, result).attr('href')
+        //data['users'] = $(usersdiv, result).text()
+        data['website'] = $(selector, result).text()
+
+        data['author'] = $(authordiv, result).text()
+        data['users'] = $(usersdiv, result).text()
+
+
+        console.log('parsed dom',result)
+        console.log('scraped data:',data)
+
+        callback(data)
     }
     xhr.onerror = function(e) {
         console.error('xhr onerror',e)
@@ -112,15 +134,18 @@ App.prototype.isRiskFactor = function(factor, $scope) {
 
     val = (this.opts.data.isApp && $scope.showApps) || 
         (! this.opts.data.isApp && $scope.showExtensions)
+    if (! val) { return false }
 
     if (factor == 'high') {
-        val = val && this.info.length > 1
-    } else if (factor == 'med') {
-        val = val && this.info.length == 1
+        val = val && this.info.indexOf("Access your data on all websites") != -1
+        return val
     } else if (factor == 'low') {
-        val = val && this.info.length == 0
+        return val && this.info.length == 0
+    } else if (factor == 'med') {
+        return ! (this.isRiskFactor('high', $scope) || 
+                  this.isRiskFactor('low', $scope))
+            
     }
-    return val
 }
 
 myApp.factory('apps', function() {
@@ -137,13 +162,10 @@ function AppsCtrl($scope, $http, apps) {
 
     $scope.showApps = false
     $scope.showExtensions = true
+    $scope.curFactor = 'high'
 
     $scope.onCheckbox = function(key, newval, oldval) {
-        $scope.apps = _.filter( $scope.allApps, function(app) {
-            return ($scope.showApps && app.opts.data.isApp) ||
-                ($scope.showExtensions && ! app.opts.data.isApp)
-        })
-        //console.log('oncheckbox',key,newval,oldval)
+        $scope.updateRiskFactor($scope.curFactor)
     }
 
     $scope.$watch('showApps', _.bind($scope.onCheckbox, this, 'showApps'))
@@ -156,16 +178,12 @@ function AppsCtrl($scope, $http, apps) {
     $scope.numTotal = 100
 
     $scope.updateRiskFactor = function(detail) {
-        console.log('update risk factor',detail,this)
+        $scope.curFactor = detail
+
         $scope.apps = $scope.allApps.filter( function(item) {
             return item.isRiskFactor(detail, $scope)
         })
 
-    }
-
-    $scope.clickButton = function() {
-        console.log('clickbutton')
-        $scope.$digest()
     }
 
     $scope.myFilter = function(item) {
@@ -182,7 +200,10 @@ function AppsCtrl($scope, $http, apps) {
 
     $scope.clickApp = function(app) {
         console.log('clicked on app',app)
-        app.fetchDetail()
+        app.fetchDetail( function(data) {
+            app.scraped = data
+            $scope.$apply()
+        })
     }
 
     apps.fetch(function(data) {
