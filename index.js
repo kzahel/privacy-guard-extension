@@ -97,6 +97,20 @@ function scrapeApps(apps, $scope, callback) {
 
 function App(opts){
     this.opts = opts
+    this.permissions_d = {}
+    this.hostPermissions_d = {}
+
+    // create fast searchable dicts ...
+    if (opts.data.permissions) {
+        for (var i=0; i<opts.data.permissions.length; i++) {
+            this.permissions_d[opts.data.permissions[i]] = true
+        }
+    }
+    if (opts.data.hostPermissions) {
+        for (var i=0; i<opts.data.hostPermissions.length; i++) {
+            this.permissions_d[opts.data.hostPermissions[i]] = true
+        }
+    }
 
     this.info = null
     this.infoSearchable = ''
@@ -140,13 +154,14 @@ App.prototype.collectInfo = function(callback) {
 }
 App.prototype.getIcon = function(sz) {
     var icons = this.opts.data.icons;
+    if (! icons) { return '' }
     for (var i=0;i<icons.length;i++) {
         if (icons[i].size == sz) {
             return icons[i].url
         }
     }
     
-    return icons.length ? icons[0].url : ''
+    return icons[0].url
 }
 App.prototype.fetchDetail = function(callback) {
     var url = 'https://chrome.google.com/webstore/detail/' + this.id
@@ -178,7 +193,7 @@ App.prototype.fetchDetail = function(callback) {
 
 
         //console.log('parsed dom',result)
-        console.log('scraped data:',data)
+        //console.log('scraped data:',data)
 
         callback(data)
     }
@@ -197,9 +212,46 @@ App.prototype.isRiskFactor = function(factor, $scope) {
     if (! val) { return false }
 
     if (factor == 'high') {
-        //console.log(this.info)
-        //val = val && this.info.indexOf("Access your data on all websites") != -1
-        val = val && this.info.indexOf("Read and modify all your data on the websites you visit") != -1 // TODO - localization strings?
+        val = false
+        if (this.name == 'Autocomplete on') { debugger }
+
+        // checked that this is definitely a localized string that it returns. instead follow info from 
+        // https://developer.chrome.com/extensions/permission_warnings
+
+        if (this.opts.data.plugins) {
+            val = val || true
+        }
+
+        var ps = this.opts.data.permissions
+        if (ps) {
+            var highrisk = 'debugger pageCapture proxy devtools_page plugins'.split(' ')
+
+            for (var i=0; i<highrisk.length; i++) {
+                if (this.permissions_d[highrisk[i]]) {
+                    val = val || true
+                    break
+                }
+            }
+        }
+
+        var ps = this.opts.data.hostPermissions
+        if (ps && ! this.opts.data.isApp) {
+            //if (this.name == 'Privacy Guard') { debugger }
+            
+            var highrisk = ['http://*/*',
+                            'https://*/*',
+                            '*://*/*',
+                            '<all_urls>']
+
+            for (var i=0; i<highrisk.length; i++) {
+                if (this.hostPermissions_d[highrisk[i]]) {
+                    val = val || true
+                    break
+                }
+            }
+                            
+        }
+
         return val
     } else if (factor == 'low') {
         return val && this.info.length == 0
