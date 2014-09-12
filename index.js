@@ -145,7 +145,8 @@ App.prototype.getIcon = function(sz) {
             return icons[i].url
         }
     }
-    return icons[0].url
+    
+    return icons.length ? icons[0].url : ''
 }
 App.prototype.fetchDetail = function(callback) {
     var url = 'https://chrome.google.com/webstore/detail/' + this.id
@@ -196,7 +197,9 @@ App.prototype.isRiskFactor = function(factor, $scope) {
     if (! val) { return false }
 
     if (factor == 'high') {
-        val = val && this.info.indexOf("Access your data on all websites") != -1
+        //console.log(this.info)
+        //val = val && this.info.indexOf("Access your data on all websites") != -1
+        val = val && this.info.indexOf("Read and modify all your data on the websites you visit") != -1 // TODO - localization strings?
         return val
     } else if (factor == 'low') {
         return val && this.info.length == 0
